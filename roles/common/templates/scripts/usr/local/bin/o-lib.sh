@@ -45,6 +45,16 @@ function lower { cat | tr '[:upper:]' '[:lower:]'; }
 
 function join_by { cat | 2spaces | sed -e "s/ /$1/g"; }
 
+
+function md5_dir {
+  find $1 -xtype f -print0 | xargs -0 sha1sum | cut -b-40 | sort | sha1sum
+}
+
+function md5_file {
+  sha1sum $1 | cut -b-40
+}
+
+
 function sync_dirs {
 
   local srcdir=$(echo $1 | sed -e 's#/$##')
@@ -58,8 +68,8 @@ function sync_dirs {
   if [ ! $(is_dir $dstdir) ]; then
     return 2
   fi
-  local srcmd5=$(find $srcdir -xtype f -print0 | xargs -0 sha1sum | cut -b-40 | sort | sha1sum)
-  local dstmd5=$(find $dstdir -xtype f -print0 | xargs -0 sha1sum | cut -b-40 | sort | sha1sum)
+  local srcmd5=md5_dir $srcdir
+  local dstmd5=md5_dir $dstdir
 
   if [[ "$srcmd5" == "$dstmd5" ]]; then
     _n "md5 are the same: $srcmd5"
@@ -72,10 +82,10 @@ function sync_dirs {
 }
 
 function host_is_up {
-  if ping -c1 $1 > /dev/null 2>&1; then
-    return 1
-  else
+  if [[ $(nmap -sP --max-retries=1 $1 | grep '1 host up') == '' ]]; then
     return 0
+  else
+    return 1
   fi
 }
 

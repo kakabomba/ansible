@@ -38,11 +38,10 @@
     <script>
         document.write('<a class="centred" href="ma' + 'il' + 'to' + ':' + 'contact' + '@' + 'ntaxa.com">');
         </script>
-        <img src="http://ntaxa.com/img/logos/ntaxa.com.png" />
+        <img src="//ntaxa.com/img/logos/ntaxa.com.png" />
         <script>
         document.write('</a>');
         </script>
-<?= gethostname()?>.a.ntaxa.com
     </body>
 </html>
 

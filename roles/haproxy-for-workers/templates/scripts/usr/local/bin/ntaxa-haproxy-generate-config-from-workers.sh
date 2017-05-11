@@ -13,25 +13,9 @@ __deb ()
 { 
   echo "$*" 1>&2
 } 
-  
-ippref='10.10.13.'
-hostpref='n.ntaxa.com'
-external_ip=88.99.238.13 
-ippref='10.10.13.'
-rootdir="/usr/local/bin/haproxy/$external_ip"
-newl="
-"   
-  
-ddir="$rootdir"
-#ddirweb="$rootdir/aliasesweb"
-allcertsdir="$rootdir/certs"
-
-rm -r "$ddir/"*
-#rm -r "$ddirweb/"*
-#rm -r "$allcertsdir/"*
 
 backend_name () {
-  echo $hostpref-$1
+  echo $external_domain-$1
 }
 
 html ()
@@ -40,7 +24,7 @@ html ()
   hna=$2
   ipa=$3
   alsa=$4
-  echo "ServerName $hna$alsa" > "$ddirweb/$vma/$hna"
+  echo "ServerName $hna$alsa" > "$external_ip_dirweb/$vma/$hna"
   return 0
 }
 
@@ -79,19 +63,20 @@ generate_certificate () {
   local domains="${@:5}"
   local d=''
   if [[ "$ssltype" == 'no' ]]; then
-    echo ''
+    return 
   fi
   if [[ "$ssltype" == 'auto' ]]; then
     ssl_domains=$(if_fqdn_and_our_ip $ifip $domains)
-    echo "ssl_domains $ssl_domains"
-    if [[ $ssl_domains != '' ]]; then
-      chainkey=$(certonly.sh ntaxa@ntaxa.com $ssl_domains)
+    for d in $ssl_domains; do
+#    if [[ $ssl_domains != '' ]]; then
+      chainkey=$(certonly.sh ntaxa@ntaxa.com $d)
       fullchain=$(echo "$chainkey" | grep 'Certificate Path: ' | sed -e 's/^.*:\s\+//g')
       privkey=$(echo "$chainkey" | grep 'Private Key Path: ' | sed -e 's/^.*:\s\+//g')
       if [[ -f $fullchain && -f $privkey ]]; then
-        cat $fullchain $privkey > "$certdir/$project_name.pem"
+        cat $fullchain $privkey > "$certdir"/"$project_name"_"$d".pem
       fi
-    fi
+#    fi
+    done
   fi
   if [[ "$ssltype" == 'yes' ]]; then
     fullchain_privkey="$(ssh -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh $proj_name)"
@@ -106,16 +91,16 @@ generate_redirections () {
   local p_n=$3
   local domains="${@:4}"
   local d
-  local tohttp="$ddir/$ip/to_http_redirection.cfg"
-  local tohttps="$ddir/$ip/to_https_redirection.cfg"
+  local tohttp="$external_ip_dir/$ip/to_http_redirection.cfg"
+  local tohttps="$external_ip_dir/$ip/to_https_redirection.cfg"
   local conditionlines=''
   local conditions=''
   local aliasconditin=''
   for d in $domains; do
     if [[ "$d" =~ [*] ]] ; then
-      aliasconditin='hdr_reg(host) -i ^'$(echo $alias | sed -e 's/\./\\./gi' -e 's/\*/.*/gi')'$'
+      aliasconditin='hdr_reg(host) -i ^'$(echo $d | sed -e 's/\./\\./gi' -e 's/\*/.*/gi')'$'
     else
-      aliasconditin="hdr(host) -i $alias"
+      aliasconditin="hdr(host) -i $d"
     fi
 	if [[ ${#conditions} -gt 150 ]]; then
       conditionlines="$conditionlines$newl$conditions"
@@ -128,21 +113,22 @@ generate_redirections () {
     if [[ "$ssltype" == 'auto' || "$ssltype" == 'yes' ]]; then
       echo "
 # project $p_n" >> $tohttps
-      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme https code 301 if !{ssl_fc} /gi" >> $tohttps
+      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme https code 301 if !{ ssl_fc } /gi" >> $tohttps
     else
       echo "
 # project $p_n" >> $tohttp
-      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme http code 301 if {ssl_fc} /gi" >> $tohttp
+      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme http code 301 if { ssl_fc } /gi" >> $tohttp
     fi
   fi
 } 
 
 generate_use_backend ()
 {
-  ip=$1
-  p_n=$2
-  alsa=$3
-  usebackendfile="$ddir/$ip/use_backend.cfg"
+  local ip=$1
+  local p_n=$2
+  local alsa=$3
+  local alias=''
+  usebackendfile="$external_ip_dir/$ip/use_backend.cfg"
   conditionlines=''
   conditions=''
   for alias in $alsa; do
@@ -151,7 +137,7 @@ generate_use_backend ()
     else
       aliasconditin="hdr(host) -i $alias"
     fi
-	if [[ ${#conditions} -gt 50 ]]; then
+	if [[ ${#conditions} -gt 150 ]]; then
       conditionlines="$conditionlines$newl$conditions"
       conditions=''
     fi
@@ -160,82 +146,152 @@ generate_use_backend ()
   conditionlines=$(strip_new_lines "$conditionlines$newl$conditions")
   if [[ "$conditionlines" != "" ]]; then
     echo "
-# project $p_n" | tee -a $usebackendfile
-    echo "$conditionlines" | sed -e "s/^ or /    use_backend $(backend_name $ip) if /gi" |  tee -a $usebackendfile
+# project $p_n" >> $usebackendfile
+    echo "$conditionlines" | sed -e "s/^ or /    use_backend $(backend_name $ip) if /gi" >> $usebackendfile
   fi
 }
 
-
-append_from_internal_ip () {
-   local ip=$1
-   local filename=$2
-   if [[ -f $ddir/$ip/$filename  ]]; then
+append_from () {
+   local dir=$1
+   local ip=$2
+   local filename=$3
+   if [[ -f $dir/$ip/$filename  ]]; then
      echo "
-#from file $ddir/$ip/$filename" >> $ddir/$filename
-    cat $ddir/$ip/$filename >> $ddir/$filename
+#from file $dir/$ip/$filename" >> $dir/$filename
+    cat $dir/$ip/$filename >> $dir/$filename
    fi
 }
 
-for ipnum in {3..5}; do
-  ip=$ippref$ipnum
-  __deb checking ip $ip
-  host_is_up $ip
-  if [[ $? == '1' ]]; then
-    mkdir -p $ddir/$ip
-    certdir=$ddir/$ip/certs
-    mkdir -p $certdir
-    mkdir -p $ddirweb/$ip
-    projects="$(ssh -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh)"
-    generate_use_backend $ip host "$ip.$hostpref"
-    if [[ "$projects" != "" ]]; then
-      echo "$projects" | while read -r delvar1 project_name delvar2 ssltype delvar3 domains; do
-        generate_use_backend $ip $project_name "$domains"
-        generate_certificate $ssltype $ddir/$ip/certs $external_ip $project_name "$domains"
-        generate_redirections $ssltype $external_ip $project_name "$domains"
-      done
+copy_from () {
+   local dir=$1
+   local ip=$2
+   local dirname=$3
+   mkdir -p $dir/$dirname
+   for f in $(ls $dir/$ip/$dirname); do
+      cp $dir/$ip/$dirname/$f $dir/$dirname/"$ip"_"$f"
+   done
+}
+
+replace_by_file () {
+ sed "/$1/ {
+  r $2
+  d
+}"
+}
+
+replace_by_string () {
+ sed -e "s/$1/$2/g"
+}
+
+
+newl="
+"   
+rootdir="/usr/local/bin/haproxy"
+rm -r "$rootdir/"*
+ip_net_domain_sets="88.99.238.13:10.10.13.:n.ntaxa.com 88.99.238.14:10.10.14.:y.ntaxa.com 88.99.238.12:10.10.12.:o.ntaxa.com"
+#allcertsdir="$rootdir/certs"
+for ip_net_domain in $ip_net_domain_sets; do
+  read external_ip internal_net external_domain < <(echo $ip_net_domain | sed -e 's/:/ /g')
+  echo "checking $external_ip $internal_net $external_domain"
+  external_ip_dir="$rootdir/$external_ip"
+  mkdir -p $external_ip_dir
+  for ipnum in {0..99}; do
+    ip=$internal_net$ipnum
+    __deb checking ip $ip
+    host_is_up $ip
+    if [[ $? == '1' ]]; then
+      echo "    host $ip is up"
+      mkdir -p $external_ip_dir/$ip
+      certdir=$external_ip_dir/$ip/certs
+      mkdir -p $certdir
+      mkdir -p $external_ip_dirweb/$ip
+      projects="$(ssh -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh)"
+      generate_use_backend $ip host "$ip.$external_domain"
+      if [[ "$projects" != "" ]]; then
+        echo "$projects" | while read -r delvar1 project_name delvar2 ssltype delvar3 domains; do
+          echo "        project: $project_name"
+          echo "          domains: $domains"
+          echo "          ssltype: $ssltype"
+          generate_use_backend $ip $project_name "$domains"
+          generate_certificate $ssltype $external_ip_dir/$ip/certs $external_ip $project_name "$domains"
+          generate_redirections $ssltype $external_ip $project_name "$domains"
+        done
+      else
+        __deb there is no ssh connection to host or no projects there
+      fi
+      echo "backend $(backend_name $ip)
+    http-response set-header X-VM $ip
+    server $external_domain-$ip $ip:80" > $external_ip_dir/$ip/backend.cfg
     else
-      __deb there is no ssh connection to host or no projects there
+      __deb host is down
+      echo "    host $ip is down"
     fi
-    echo "backend $(backend_name $ip)" > $ddir/$ip/backend.cfg
-    echo "  server $hostpref-$ip $ip:80" >> $ddir/$ip/backend.cfg
-  else
-    __deb host is down
+  done
+
+  for ip in $(ls $external_ip_dir/); do
+    __deb ip is $ip
+    append_from $external_ip_dir $ip backend.cfg
+    append_from $external_ip_dir $ip use_backend.cfg
+    append_from $external_ip_dir $ip to_http_redirection.cfg
+    append_from $external_ip_dir $ip to_https_redirection.cfg
+    copy_from $external_ip_dir $ip certs
+  done
+cat ./haproxy.frontend.cfg.template \
+  | replace_by_file '----use_backends----' $external_ip_dir/use_backend.cfg \
+  | replace_by_file '----to_http_redirections----' $external_ip_dir/to_http_redirection.cfg \
+  | replace_by_file '----to_https_redirections----' $external_ip_dir/to_https_redirection.cfg \
+  | replace_by_string '----port_http----' "80"$(echo $external_ip | sed -e 's/^.*\..*\..*\.//g') \
+  | replace_by_string '----port_https----' "443"$(echo $external_ip | sed -e 's/^.*\..*\..*\.//g') \
+  | replace_by_string '----external_ip----' "$external_ip" \
+  > $external_ip_dir/frontend.cfg
+done
+
+for external_ip in $(ls $rootdir/); do
+  __deb "external_ip is $external_ip"
+  append_from $rootdir $external_ip backend.cfg
+  append_from $rootdir $external_ip frontend.cfg
+  mkdir -p $rootdir/certs/$external_ip
+  echo '/etc/haproxy/certs/.default.pem' > $rootdir/certs/$external_ip/certs.txt
+  if [[ -d $rootdir/$external_ip/certs/ ]]; then
+    for cert in $(ls $rootdir/$external_ip/certs/); do
+      echo "/etc/haproxy/certs/$external_ip/$cert" >> $rootdir/certs/$external_ip/certs.txt
+      cp $rootdir/$external_ip/certs/$cert $rootdir/certs/$external_ip/$cert
+    done
   fi
 done
+cp .default.pem $rootdir/certs/.default.pem 
 
-for ip in $(ls $ddir/); do
-  __deb ip is $ip
-  append_from_internal_ip $ip backend.cfg
-  append_from_internal_ip $ip use_backend.cfg
-  append_from_internal_ip $ip to_http_redirection.cfg
-  append_from_internal_ip $ip to_https_redirection.cfg
-done
+cat ./haproxy.cfg.template \
+  | replace_by_file "----backends----" $rootdir/backend.cfg \
+  | replace_by_file '----frontends----' $rootdir/frontend.cfg \
+  > $rootdir/haproxy.cfg
 
-cat ./haproxy/haproxy.cfg.template | sed "/----backends----/ {
-  r $ddir/backends.cfg
-  d
-}" | sed "/----use_backends----/ {
-  r $ddir/use_backends.cfg
-  d
-}" | sed "/----to_http_redirections----/ {
-  r $ddir/$ip/to_http_redirections.cfg
-  d
-}" | sed "/----to_https_redirections----/ {
-  r $ddir/$ip/to_https_redirections.cfg
-  d
-}" > /etc/haproxy/haproxy.cfg
+md5oldcerts=$(md5_dir /etc/haproxy/certs) 
+md5newcerts=$(md5_dir $rootdir/certs) 
+md5oldconf=$(md5_file /etc/haproxy/haproxy.cfg) 
+md5newconf=$(md5_file $rootdir/haproxy.cfg) 
+__deb "[[ $md5newcerts != $md5oldcerts ]] || [[ $md5newconf != $md5oldconf ]]"
+echo ''
+if [[ $md5newcerts != $md5oldcerts ]] || [[ $md5newconf != $md5oldconf ]]; then
+  echo syncing certs copy haproxy.cfg and restarting haproxy
+  rsync -r --force --del $rootdir/certs/ /etc/haproxy/certs/
+  cp $rootdir/haproxy.cfg /etc/haproxy/haproxy.cfg
+  service haproxy restart
+else
+  echo "certificates nor configs didn't changed" 
+fi
 
-service haproxy restart
 
+#######################################################################################
 exit
 for vmpath in /images/private/*; do
   vm=`basename $vmpath`
   if [[ $vm -ge "$f" && $vm -le "$t" ]]; then
     vmhostshort=`cat /images/private/$vm/etc/hostname`
     vmhost=$vmhostshort".a.ntaxa.com"
-    mkdir -p $ddir/$vm-$vmhostshort
-    mkdir -p $ddirweb/$vm-$vmhostshort
-    echo "backend $vm-$vmhostshort" > $ddir/$vm-$vmhostshort/backend.cfg
+    mkdir -p $external_ip_dir/$vm-$vmhostshort
+    mkdir -p $external_ip_dirweb/$vm-$vmhostshort
+    echo "backend $vm-$vmhostshort" > $external_ip_dir/$vm-$vmhostshort/backend.cfg
     fw $vm-$vmhostshort $vmhost 10.10.12.$vm "$vmhost *.$vmhost"
     html $vm-$vmhostshort $vmhost 10.10.12.$vm ""
     echo "+scaning hosts in $vmpath"
@@ -243,8 +299,7 @@ for vmpath in /images/private/*; do
       host=`basename $hostpath`
       allals=''
       if [[ -d $hostpath ]]; then
-	echo "  server $vm-$vmhostshort-$host 10.10.12.$vm:80" >> $ddir/$vm-$vmhostshort/backend.cfg
-        echo "+	scaning aliases files for $hostpath"
+	echo "  server $vm-$vmhostshort-$host 10.10.12.$vm:80" >> $external_ip_dir/$vm-$vmhostshort/backend.cfg
         for aliasfilepath in /images/private/$vm/var/www/$host/config/aliases*.conf; do
           aliasfile=`basename $aliasfilepath`
           als=''
@@ -284,7 +339,7 @@ done
 
 cat $rootdir/haproxy_begin.cfg > $rootdir/haproxy.cfg
 
-for backend in $ddir/*
+for backend in $external_ip_dir/*
   do
     echo "$newl#use backends from file $backend" >> $rootdir/haproxy.cfg
     for use_backend in $backend/*use_backend.cfg
@@ -293,21 +348,21 @@ for backend in $ddir/*
       done
   done
 
-for backenddir in $ddir/*
+for backenexternal_ip_dir in $external_ip_dir/*
   do
     echo "$newl" >> $rootdir/haproxy.cfg
 #    cat "$backend/backend.cfg" >> $rootdir/haproxy.cfg
-     [[ "$backenddir" =~ ^$ddir/(([0-9]*).*)$ ]]
+     [[ "$backenexternal_ip_dir" =~ ^$external_ip_dir/(([0-9]*).*)$ ]]
 #     backendip=$(echo $)
-#     backendname=$(echo "$backenddir" | sed -e "s#$ddir/##gi")
+#     backendname=$(echo "$backenexternal_ip_dir" | sed -e "s#$external_ip_dir/##gi")
      backendname="${BASH_REMATCH[1]}"
      ip="${BASH_REMATCH[2]}"
      echo "backend $backendname"  >> $rootdir/haproxy.cfg
-    for use_backendfile in $backenddir/*use_backend.cfg
+    for use_backendfile in $backenexternal_ip_dir/*use_backend.cfg
       do
         regexp='s#^.*/\([^/]*\)\.use_backend\.cfg$#\1#g'
         suffix=$(echo $use_backend | sed -e $regexp)
-	servername="$backendname-"$(echo "$use_backendfile" | sed -e "s#$backenddir/##gi" -e "s#\.use_backend\.cfg##gi")
+	servername="$backendname-"$(echo "$use_backendfile" | sed -e "s#$backenexternal_ip_dir/##gi" -e "s#\.use_backend\.cfg##gi")
 	echo "  server $servername 10.10.12.$ip:80"  >> $rootdir/haproxy.cfg
         cat $use_backendfile | sed -e "s/^\s*use_backend\s*\([^ ]*\)/    use-server $servername/g"  >> $rootdir/haproxy.cfg
       done

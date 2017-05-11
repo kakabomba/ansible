@@ -4,8 +4,7 @@
 </head>
 <body>
 <?php
-echo gethostname().'.a.ntaxa.com ';
+echo getHostByName(getHostName());
 ?>
 </body>
 </html>
-
