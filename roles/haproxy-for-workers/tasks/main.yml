@@ -21,6 +21,7 @@
     state: directory
 
 - name: Install ssh key
+  no_log: true
   copy:
     content: "{{ haproxy_worker_communication_id_rsa }}"
     dest: "/root/.ssh/haproxy_worker_communication_id_rsa"

@@ -71,7 +71,7 @@ generate_certificate () {
     ssl_domains=$(if_fqdn_and_our_ip $ifip $domains)
     for d in $ssl_domains; do
 #    if [[ $ssl_domains != '' ]]; then
-      chainkey=$(certonly.sh ntaxa@ntaxa.com $d)
+      chainkey=$(./certonly.sh ntaxa@ntaxa.com $d)
       fullchain=$(echo "$chainkey" | grep 'Certificate Path: ' | sed -e 's/^.*:\s\+//g')
       privkey=$(echo "$chainkey" | grep 'Private Key Path: ' | sed -e 's/^.*:\s\+//g')
       if [[ -f $fullchain && -f $privkey ]]; then
