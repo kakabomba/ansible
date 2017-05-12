@@ -31,7 +31,10 @@ html ()
 }
 
 ip_for_domain () {
-  host -ta $1 | grep 'has address' | head -n1 | sed -e 's/.* has address //g'
+  __deb '-> ip_for_domain'" $*"
+  local ret=$(host -ta $1 | grep 'has address' | head -n1 | sed -e 's/.* has address //g')
+  __deb '<- ip_for_domain'" $ret"
+  echo $ret
 }
 
 if_fqdn_and_our_ip () {
@@ -71,7 +74,8 @@ generate_certificate () {
     ssl_domains=$(if_fqdn_and_our_ip $ifip $domains)
     for d in $ssl_domains; do
 #    if [[ $ssl_domains != '' ]]; then
-      chainkey=$(./certonly.sh ntaxa@ntaxa.com $d)
+      $(./certonly.sh ntaxa@ntaxa.com $d)
+      chainkey=$(./cert_for_domains.sh $d)
       fullchain=$(echo "$chainkey" | grep 'Certificate Path: ' | sed -e 's/^.*:\s\+//g')
       privkey=$(echo "$chainkey" | grep 'Private Key Path: ' | sed -e 's/^.*:\s\+//g')
       if [[ -f $fullchain && -f $privkey ]]; then
@@ -115,7 +119,7 @@ generate_redirections () {
     if [[ "$ssltype" == 'auto' || "$ssltype" == 'yes' ]]; then
       echo "
 # project $p_n" >> $tohttps
-      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme https code 301 if !{ ssl_fc } /gi" >> $tohttps
+      echo "$conditionlines" | sed -e "s/^ or /    redirect scheme https code 301 if !{ ssl_fc } !lets_encrypt_request /gi" >> $tohttps
     else
       echo "
 # project $p_n" >> $tohttp
