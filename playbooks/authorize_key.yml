@@ -1,0 +1,14 @@
+---
+
+- hosts: "{{ hosts|default('*') }}"
+  remote_user: root
+  become: no
+  tasks:
+    - name: Usage
+      debug:
+        msg: "ansible-playbook -vvvv -i ./inventories/profi.py -s ./playbooks/authorize_key.yml -loleh  --extra-vars='public_key=/home/oles/.ssh/some_id_rsa.pub'"
+    - name: Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-hosts.sh'
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', public_key) }}"
