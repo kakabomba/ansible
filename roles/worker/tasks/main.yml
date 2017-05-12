@@ -197,5 +197,4 @@
   authorized_key:
     user: root
     state: present
-    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-hosts.sh\" {{ lookup('file', haproxy_public_key) }}"
-  when: haproxy_public_key is defined
+    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-hosts.sh\" {{ haproxy_worker_communication_id_rsa_pub }}"

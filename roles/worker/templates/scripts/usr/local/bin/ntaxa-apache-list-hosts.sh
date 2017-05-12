@@ -14,13 +14,13 @@ for dir in $(ls $vw); do
   >&2 echo "checking directory $dir"
   if [[ -d $vw/$dir && -f $cf && $dir =~ ^(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}$ ]]; then
     >&2 echo "checking config file $cf"
-    if [[ -d "$vw/$dir/config/ssl" ]];
+    if [[ -d "$vw/$dir/config/ssl" ]]; then
       if [[ -f "$vw/$dir/config/ssl/fullchain_and_privkey.pem" ]]; then
         ssl="$vw/$dir/config/ssl/fullchain_and_privkey.pem" 
       else
         ssl=auto 
       fi
-    then
+    else
       ssl=no
     fi
     project="project: $dir ssl: $ssl domains: "$(cat $cf | grep '^\s*ServerName\s\+' | head -n1 | sed -e 's/^\s*ServerName\s\+\([^#]*\)\(#.*\)\?$/\1/g')

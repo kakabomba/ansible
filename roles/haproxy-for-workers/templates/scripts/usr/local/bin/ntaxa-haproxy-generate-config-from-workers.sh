@@ -81,7 +81,7 @@ generate_certificate () {
     done
   fi
   if [[ "$ssltype" == 'yes' ]]; then
-    fullchain_privkey="$(ssh -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh $proj_name)"
+    fullchain_privkey="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh $proj_name)"
     cat $fullchain_privkey > "$certdir/$project_name.pem"
   fi
   __deb '<-'" generate_certificate"
@@ -208,7 +208,7 @@ for ip_net_domain in $ip_net_domain_sets; do
       certdir=$external_ip_dir/$ip/certs
       mkdir -p $certdir
       mkdir -p $external_ip_dirweb/$ip
-      projects="$(ssh -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh)"
+      projects="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh)"
       generate_use_backend $ip host "$ip.$external_domain"
       if [[ "$projects" != "" ]]; then
         echo "$projects" | while read -r delvar1 project_name delvar2 ssltype delvar3 domains; do
@@ -281,7 +281,7 @@ if [[ $md5newcerts != $md5oldcerts ]] || [[ $md5newconf != $md5oldconf ]]; then
   echo syncing certs copy haproxy.cfg and restarting haproxy
   rsync -r --force --del $rootdir/certs/ /etc/haproxy/certs/
   cp $rootdir/haproxy.cfg /etc/haproxy/haproxy.cfg
-  service haproxy restart
+  /usr/sbin/service haproxy restart
 else
   echo "certificates nor configs didn't changed" 
 fi
