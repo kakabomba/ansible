@@ -190,7 +190,7 @@ newl="
 "   
 rootdir="/usr/local/bin/haproxy"
 rm -r "$rootdir/"*
-ip_net_domain_sets='{{ ip_net_domain_sets }}'
+ip_net_domain_sets=''
 #ip_net_domain_sets='88.99.238.12:10.10.12.:oleh.ntaxa.com'
 #allcertsdir="$rootdir/certs"
 for ip_net_domain in $ip_net_domain_sets; do

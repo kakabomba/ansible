@@ -10,13 +10,10 @@
 - name: replace
   replace:
     path: /usr/local/bin/ntaxa-haproxy-generate-config-from-workers.sh
-    regexp: "ip_net_domain_sets=''"
+    regexp: "ip_net_domain_sets='.*'"
     replace: "ip_net_domain_sets='{{ ip_net_domain_sets }}'"
 
-
-#- name: replace
-#  replace:
-#    path: /usr/local/bin/ntaxa-haproxy-generate-config-from-workers.sh
-#    regexp: "ip_net_domain_sets=''"
-#    replace: "ip_net_domain_sets='{{ ip_net_domain_sets }}'"
-
+- name: restart cron
+  service:
+    name: cron
+    state: restarted

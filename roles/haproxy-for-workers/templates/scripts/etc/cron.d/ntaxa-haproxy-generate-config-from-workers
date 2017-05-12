@@ -1,2 +1,2 @@
 
-*/5 * * * * root { /usr/local/bin/ntaxa-artek-vz-update-haproxy.sh 2>&3 | logger -p user.notice; } 3>&1 1>&2 | logger -p user.error
+*/5 * * * * root cd /usr/local/bin; ./ntaxa-haproxy-generate-config-from-workers.sh 2>&1 | logger -p user.info > /dev/null 2>&1
