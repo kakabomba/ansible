@@ -107,4 +107,19 @@ function is_email {
 }
 
 
+function pid_cleanup {
+  local basen=$(basename $0)
+  local pid_file="/var/run/$basen.pid"
+  rm $pid_file
+}
 
+function run_script_only_once {
+  local basen=$(basename $0)
+  local pid_file="/var/run/$basen.pid"
+  if [ -f $pid_file ]; then
+    _e "$basen currently running under pid $(cat $pid_file). you can try: kill -9 $(cat $pid_file); rm $pid_file"
+  else
+    echo $$ > $pid_file
+    trap pid_cleanup EXIT
+  fi
+}

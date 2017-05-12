@@ -1,2 +1,2 @@
 
-# */5 * * * * root /usr/local/bin/ntaxa-artek-vz-update-haproxy.sh >> /var/log/haproxy-aliases.log
+*/5 * * * * root { /usr/local/bin/ntaxa-artek-vz-update-haproxy.sh 2>&3 | logger -p user.notice; } 3>&1 1>&2 | logger -p user.error

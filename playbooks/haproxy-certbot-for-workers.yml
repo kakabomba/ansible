@@ -6,6 +6,6 @@
   remote_user: root
   become: no
   roles:
-    - common
-    - haproxy-certbot
+#    - common
+#    - haproxy-certbot
     - haproxy-for-workers
