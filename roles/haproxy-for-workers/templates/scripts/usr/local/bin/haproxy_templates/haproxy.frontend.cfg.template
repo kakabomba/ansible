@@ -1,0 +1,22 @@
+
+frontend ----external_ip----_http
+
+  bind 0.0.0.0:----port_http----
+
+  acl lets_encrypt_request path_beg -i /.well-known/acme-challenge/
+
+  ----to_https_redirections----
+
+  use_backend letsencrypt  if lets_encrypt_request
+
+  ----use_backends----
+
+
+frontend ----external_ip----_https
+  bind 0.0.0.0:----port_https---- ssl crt-list /etc/haproxy/certs/----external_ip----/certs.txt
+
+  ----to_http_redirections----
+
+  ----use_backends----
+
+
