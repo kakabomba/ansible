@@ -67,21 +67,34 @@ generate_certificate () {
   local proj_name=$4
   local domains="${@:5}"
   local d=''
+  local last_cert_timestamp='0'
+  local now_timestamp=''
+  local from_last_cert_timestamp=''
   if [[ "$ssltype" == 'no' ]]; then
     return 
   fi
   if [[ "$ssltype" == 'auto' ]]; then
     ssl_domains=$(if_fqdn_and_our_ip $ifip $domains)
     for d in $ssl_domains; do
-#    if [[ $ssl_domains != '' ]]; then
-      $(./certonly.sh ntaxa@ntaxa.com $d)
       chainkey=$(./cert_for_domains.sh $d)
+      if [[ "$chainkey" == "" ]]; then
+        __deb "No chain. we will try to get by letsencrypt"
+        last_cert_timestamp=$(file_timestamp /usr/local/bin/haproxy_templates/last_cert_timestamp)
+        now_timestamp=$(date +"%s")
+        from_last_cert_timestamp=$(( $now_timestamp - $last_cert_timestamp ))
+        if [[ $from_last_cert_timestamp < 3600 ]]; then
+          __deb "Last certificate was retrieved less than hour ($from_last_cert_timestamp). waiting"
+        else
+          $(./certonly.sh ntaxa@ntaxa.com $d)
+          touch /usr/local/bin/haproxy_templates/last_cert_timestamp
+          chainkey=$(./cert_for_domains.sh $d)
+        fi
+      fi
       fullchain=$(echo "$chainkey" | grep 'Certificate Path: ' | sed -e 's/^.*:\s\+//g')
       privkey=$(echo "$chainkey" | grep 'Private Key Path: ' | sed -e 's/^.*:\s\+//g')
       if [[ -f $fullchain && -f $privkey ]]; then
         cat $fullchain $privkey > "$certdir"/"$project_name"_"$d".pem
       fi
-#    fi
     done
   fi
   if [[ "$ssltype" == 'yes' ]]; then
@@ -194,7 +207,7 @@ newl="
 "   
 rootdir="/usr/local/bin/haproxy"
 rm -r "$rootdir/"*
-ip_net_domain_sets=''
+ip_net_domain_sets='88.99.238.12:10.10.12.:oleh.ntaxa.com'
 #ip_net_domain_sets='88.99.238.12:10.10.12.:oleh.ntaxa.com'
 #allcertsdir="$rootdir/certs"
 for ip_net_domain in $ip_net_domain_sets; do

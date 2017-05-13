@@ -106,6 +106,10 @@ function is_email {
   fi
 }
 
+function file_timestamp {
+  local tm=$(stat $1 | grep "^Change: " | sed -e 's/^Change: //g')
+  date -d "$tm" +"%s"
+}
 
 function pid_cleanup {
   local basen=$(basename $0)
