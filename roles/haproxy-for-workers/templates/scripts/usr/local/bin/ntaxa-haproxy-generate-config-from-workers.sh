@@ -82,7 +82,7 @@ generate_certificate () {
         last_cert_timestamp=$(file_timestamp /usr/local/bin/haproxy_templates/last_cert_timestamp)
         now_timestamp=$(date +"%s")
         from_last_cert_timestamp=$(( $now_timestamp - $last_cert_timestamp ))
-        if [[ $from_last_cert_timestamp < 3600 ]]; then
+        if [[ $from_last_cert_timestamp < 36000 ]]; then
           __deb "Last certificate was retrieved less than hour ($from_last_cert_timestamp). waiting"
         else
           $(./certonly.sh ntaxa@ntaxa.com $d)

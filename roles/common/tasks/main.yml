@@ -23,6 +23,7 @@
     - links
     - debconf-utils
     - python-pip
+    - jq
 
 - name: Install oh-my-zhs (best shell needs braces)
   shell: curl -L http://install.ohmyz.sh | sh
