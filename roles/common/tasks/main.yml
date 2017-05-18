@@ -21,6 +21,7 @@
     - software-properties-common
     - tcpdump
     - links
+    - lynx
     - debconf-utils
     - python-pip
     - jq

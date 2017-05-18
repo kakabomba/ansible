@@ -1,0 +1,19 @@
+---
+
+- name: copy scripts
+  copy:
+    src: "{{role_path}}/templates/scripts/"
+    mode: preserve
+    dest: "/"
+
+- name: Install common packages
+  apt:
+    name: "{{ item }}"
+  with_items:
+    - openvpn
+
+- name: copy vault scripts
+  copy:
+    src: "{{role_path}}/files_vault/"
+    mode: preserve
+    dest: "/"

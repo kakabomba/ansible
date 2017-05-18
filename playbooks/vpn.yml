@@ -1,0 +1,10 @@
+---
+
+- include: include/set_hostname.yml
+
+- hosts: "{{ hosts|default('*') }}"
+  remote_user: root
+  become: no
+  roles:
+#    - common
+    - vpn
