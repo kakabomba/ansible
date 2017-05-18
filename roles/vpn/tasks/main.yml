@@ -12,8 +12,14 @@
   with_items:
     - openvpn
 
+
 - name: copy vault scripts
   copy:
     src: "{{role_path}}/files_vault/"
     mode: preserve
     dest: "/"
+
+- name: reload openvpn
+  service:
+    name: openvpn
+    state: restarted
