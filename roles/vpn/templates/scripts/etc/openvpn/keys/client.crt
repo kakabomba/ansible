@@ -1,0 +1,95 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2 (0x2)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=UA, ST=Galychyna, L=Lviv, O=Ntaxa, CN=Ntaxa CA/name=EasyRSA/emailAddress=ntaxa@ntaxa.com
+        Validity
+            Not Before: May 18 19:29:48 2017 GMT
+            Not After : May 16 19:29:48 2027 GMT
+        Subject: C=UA, ST=Galychyna, L=Lviv, O=Ntaxa, CN=client/name=EasyRSA/emailAddress=ntaxa@ntaxa.com
+        Subject Public Key Info:
+            Public Key Algorithm: rsaEncryption
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:ab:98:6a:e0:a1:f9:5a:7c:0d:63:94:8e:00:79:
+                    03:ae:d0:da:c6:08:20:d0:23:11:7f:be:80:13:61:
+                    8b:33:57:76:b7:b8:d5:cc:8d:d0:8d:6b:fb:62:28:
+                    9d:da:c9:ac:e3:4c:bc:bf:38:5e:0a:90:73:e8:6c:
+                    87:43:c8:a2:dd:ba:65:bd:0f:06:cc:fd:b7:54:f2:
+                    0e:93:33:ec:fc:09:e6:d5:60:bf:35:ab:61:75:57:
+                    3a:99:fa:59:4e:38:f6:67:ad:6c:ee:7e:2e:a3:45:
+                    4b:1f:bd:b1:a8:b1:e3:a0:a4:68:c9:46:bd:bf:94:
+                    b6:1d:78:26:5f:31:3d:5e:4a:37:59:2d:66:68:d8:
+                    a6:10:f5:26:bb:21:78:de:2f:fe:2c:40:25:78:46:
+                    c5:e4:1b:21:4e:b7:23:58:2f:67:03:0f:06:04:73:
+                    3b:17:38:af:35:45:58:34:9d:dd:d7:55:04:d9:7b:
+                    08:61:38:98:3c:1d:8c:08:de:c8:57:c0:8b:9a:49:
+                    01:51:3a:fd:96:61:de:22:8b:2a:80:c9:86:9d:f7:
+                    db:67:9e:f0:7a:26:0d:a7:13:2b:f6:6d:c3:ac:53:
+                    be:e6:c8:21:29:83:fc:ff:a9:6e:90:02:4b:c1:ed:
+                    1a:6f:99:64:ff:c0:22:b2:fb:88:f0:8f:af:dd:2c:
+                    ad:57
+                Exponent: 65537 (0x10001)
+        X509v3 extensions:
+            X509v3 Basic Constraints: 
+                CA:FALSE
+            Netscape Comment: 
+                Easy-RSA Generated Certificate
+            X509v3 Subject Key Identifier: 
+                0B:27:3D:93:61:75:B4:A6:A2:DB:5C:71:F8:B9:D2:40:55:EC:F8:7F
+            X509v3 Authority Key Identifier: 
+                keyid:AB:26:88:0D:13:1A:1A:EA:3F:D1:D5:A8:AE:10:2B:A8:67:F1:51:2C
+                DirName:/C=UA/ST=Galychyna/L=Lviv/O=Ntaxa/CN=Ntaxa CA/name=EasyRSA/emailAddress=ntaxa@ntaxa.com
+                serial:D2:87:4C:C3:E9:03:2D:09
+
+            X509v3 Extended Key Usage: 
+                TLS Web Client Authentication
+            X509v3 Key Usage: 
+                Digital Signature
+            X509v3 Subject Alternative Name: 
+                DNS:client
+    Signature Algorithm: sha256WithRSAEncryption
+         0b:86:7f:0e:e8:f2:f7:99:0c:9d:bb:9a:38:d8:31:ca:03:fd:
+         9d:06:4b:9f:e8:9c:b6:43:29:34:f9:bb:83:0d:0b:bf:7a:3f:
+         71:3a:d4:a5:a7:70:28:f8:37:22:eb:0b:b9:a5:42:dd:6e:b9:
+         da:54:f6:09:dc:4a:69:51:f3:ae:bc:0a:68:96:bb:b6:ac:9f:
+         af:0e:1a:cd:0b:63:cd:db:f7:b4:8e:b0:dd:75:7f:6e:78:da:
+         43:fb:19:30:0f:92:a2:89:5e:3d:9f:9b:1e:4b:55:41:19:61:
+         15:20:fb:49:cc:58:6c:c5:d2:85:3e:fd:1d:6f:82:90:ba:22:
+         1b:2e:e3:0b:ff:e3:84:35:da:d9:63:82:a9:70:f8:dd:e3:fb:
+         2f:3b:c5:a5:3f:e1:cd:ab:bd:2a:37:39:7a:4b:48:68:88:19:
+         fb:07:fa:4b:dc:69:2e:f2:f4:70:34:14:83:c0:41:e6:a3:05:
+         98:cd:2f:bc:06:80:a4:b8:74:33:f0:38:f5:bc:14:3f:ee:41:
+         df:b7:4a:3f:2c:42:8c:53:68:3e:97:fd:29:3f:02:6d:d6:e5:
+         bc:70:d6:f9:da:63:6b:f0:6b:f3:b9:85:3c:ca:bf:33:9e:e9:
+         a8:48:74:d7:b7:5a:19:5a:d5:6a:66:ae:a3:f9:17:68:83:a7:
+         1a:3e:5a:09
+-----BEGIN CERTIFICATE-----
+MIIE1jCCA76gAwIBAgIBAjANBgkqhkiG9w0BAQsFADCBhTELMAkGA1UEBhMCVUEx
+EjAQBgNVBAgTCUdhbHljaHluYTENMAsGA1UEBxMETHZpdjEOMAwGA1UEChMFTnRh
+eGExETAPBgNVBAMTCE50YXhhIENBMRAwDgYDVQQpEwdFYXN5UlNBMR4wHAYJKoZI
+hvcNAQkBFg9udGF4YUBudGF4YS5jb20wHhcNMTcwNTE4MTkyOTQ4WhcNMjcwNTE2
+MTkyOTQ4WjCBgzELMAkGA1UEBhMCVUExEjAQBgNVBAgTCUdhbHljaHluYTENMAsG
+A1UEBxMETHZpdjEOMAwGA1UEChMFTnRheGExDzANBgNVBAMTBmNsaWVudDEQMA4G
+A1UEKRMHRWFzeVJTQTEeMBwGCSqGSIb3DQEJARYPbnRheGFAbnRheGEuY29tMIIB
+IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq5hq4KH5WnwNY5SOAHkDrtDa
+xggg0CMRf76AE2GLM1d2t7jVzI3QjWv7Yiid2sms40y8vzheCpBz6GyHQ8ii3bpl
+vQ8GzP23VPIOkzPs/Anm1WC/NathdVc6mfpZTjj2Z61s7n4uo0VLH72xqLHjoKRo
+yUa9v5S2HXgmXzE9Xko3WS1maNimEPUmuyF43i/+LEAleEbF5BshTrcjWC9nAw8G
+BHM7FzivNUVYNJ3d11UE2XsIYTiYPB2MCN7IV8CLmkkBUTr9lmHeIosqgMmGnffb
+Z57weiYNpxMr9m3DrFO+5sghKYP8/6lukAJLwe0ab5lk/8AisvuI8I+v3SytVwID
+AQABo4IBTzCCAUswCQYDVR0TBAIwADAtBglghkgBhvhCAQ0EIBYeRWFzeS1SU0Eg
+R2VuZXJhdGVkIENlcnRpZmljYXRlMB0GA1UdDgQWBBQLJz2TYXW0pqLbXHH4udJA
+Vez4fzCBugYDVR0jBIGyMIGvgBSrJogNExoa6j/R1aiuECuoZ/FRLKGBi6SBiDCB
+hTELMAkGA1UEBhMCVUExEjAQBgNVBAgTCUdhbHljaHluYTENMAsGA1UEBxMETHZp
+djEOMAwGA1UEChMFTnRheGExETAPBgNVBAMTCE50YXhhIENBMRAwDgYDVQQpEwdF
+YXN5UlNBMR4wHAYJKoZIhvcNAQkBFg9udGF4YUBudGF4YS5jb22CCQDSh0zD6QMt
+CTATBgNVHSUEDDAKBggrBgEFBQcDAjALBgNVHQ8EBAMCB4AwEQYDVR0RBAowCIIG
+Y2xpZW50MA0GCSqGSIb3DQEBCwUAA4IBAQALhn8O6PL3mQydu5o42DHKA/2dBkuf
+6Jy2Qyk0+buDDQu/ej9xOtSlp3Ao+Dci6wu5pULdbrnaVPYJ3EppUfOuvApolru2
+rJ+vDhrNC2PN2/e0jrDddX9ueNpD+xkwD5KiiV49n5seS1VBGWEVIPtJzFhsxdKF
+Pv0db4KQuiIbLuML/+OENdrZY4KpcPjd4/svO8WlP+HNq70qNzl6S0hoiBn7B/pL
+3Gku8vRwNBSDwEHmowWYzS+8BoCkuHQz8Dj1vBQ/7kHft0o/LEKMU2g+l/0pPwJt
+1uW8cNb52mNr8GvzuYU8yr8znumoSHTXt1oZWtVqZq6j+Rdog6caPloJ
+-----END CERTIFICATE-----
