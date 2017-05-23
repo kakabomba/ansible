@@ -12,11 +12,20 @@
   with_items:
     - openvpn
 
+#iptables -A FORWARD -p tcp -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
 #- iptables:
 #    chain: FORWARD
 #    ctstate: NEW,ESTABLISHED,RELATED
 #    jump: ACCEPT
 #  become: yes
+
+#iptables -t nat -s 10.11.0.0/24 -A POSTROUTING -j MASQUERADE
+- iptables:
+    chain: POSTROUTING
+    table: nat
+    source: 10.11.0.0/24
+    jump: MASQUERADE
+  become: yes
 
 - sysctl:
     name: net.ipv4.ip_forward
