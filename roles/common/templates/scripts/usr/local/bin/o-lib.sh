@@ -127,3 +127,21 @@ function run_script_only_once {
     trap pid_cleanup EXIT
   fi
 }
+
+function iptables_flush {
+  iptables -F
+  iptables -X
+  iptables -t nat -F
+  iptables -t nat -X
+  iptables -t mangle -F
+  iptables -t mangle -X
+  iptables -P INPUT ACCEPT
+  iptables -P FORWARD ACCEPT
+  iptables -P OUTPUT ACCEPT
+}
+
+function iptables_show {
+  iptables -t nat -L --line-numbers -n
+  iptables -t filter -L --line-numbers -n
+  iptables -t mangle -L --line-numbers -n
+}

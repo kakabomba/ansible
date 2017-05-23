@@ -12,12 +12,18 @@
   with_items:
     - openvpn
 
+#- iptables:
+#    chain: FORWARD
+#    ctstate: NEW,ESTABLISHED,RELATED
+#    jump: ACCEPT
+#  become: yes
 
-- name: copy vault scripts
-  copy:
-    src: "{{role_path}}/files_vault/"
-    mode: preserve
-    dest: "/"
+- sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
 
 - name: reload openvpn
   service:
