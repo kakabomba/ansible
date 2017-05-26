@@ -206,6 +206,8 @@ def main_list(options, config_path):
     results['oleh'] = {'hosts': []}
     results['ntaxa'] = {'hosts': []}
     results['yurko'] = {'hosts': []}
+    results['php5'] = {'hosts': []}
+    results['php7'] = {'hosts': []}
 
     proxmox_api = ProxmoxAPI(options, config_path)
     proxmox_api.auth()
@@ -259,6 +261,15 @@ def main_list(options, config_path):
                 results['_meta']['hostvars'][vm]['ansible_port'] = '22{}'.format(vmid)
                 results['system']['hosts'] += [vm]
             # results['_meta']['hostvars'][vm]['ansible_user'] = 'root'
+
+            if vmid % 100 > 50 and vmid % 100 < 59 and (
+                    (vmid >= 1200 and vmid < 1299) or (vmid >= 1300 and vmid < 1399) or (vmid >= 1400 and vmid < 1499)):
+                results['php5']['hosts'] += [vm]
+
+            if vmid % 100 > 70 and vmid % 100 < 79 and (
+                    (vmid >= 1200 and vmid < 1299) or (vmid >= 1300 and vmid < 1399) or (vmid >= 1400 and vmid < 1499)):
+                results['php7']['hosts'] += [vm]
+
             try:
                 type = results['_meta']['hostvars'][vm]['proxmox_type']
             except KeyError:
@@ -285,9 +296,6 @@ def main_list(options, config_path):
                             'hosts': []
                         }
                     results[group]['hosts'] += [vm]
-
-
-
 
             # Create group 'running'
             # so you can: --limit 'running'

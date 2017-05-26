@@ -27,6 +27,7 @@
     - phppgadmin
     - phpmyadmin
     - pure-ftpd-mysql
+    - sysv-rc-conf
 
 - name: Check phpmyadmin file exists
   stat:

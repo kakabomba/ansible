@@ -27,6 +27,9 @@
     - jq
     - iptables-persistent
 
+- name: Generate locales
+  shell: locale-gen "en_US" && locale-gen "en_US.UTF-8"
+
 - name: Install oh-my-zhs (best shell needs braces)
   shell: curl -L http://install.ohmyz.sh | sh
 
