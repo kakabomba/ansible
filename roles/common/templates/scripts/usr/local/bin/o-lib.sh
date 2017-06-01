@@ -68,8 +68,8 @@ function sync_dirs {
   if [ ! $(is_dir $dstdir) ]; then
     return 2
   fi
-  local srcmd5=md5_dir $srcdir
-  local dstmd5=md5_dir $dstdir
+  local srcmd5=$(md5_dir "$srcdir")
+  local dstmd5=$(md5_dir "$dstdir")
 
   if [[ "$srcmd5" == "$dstmd5" ]]; then
     _n "md5 are the same: $srcmd5"
@@ -145,3 +145,16 @@ function iptables_show {
   iptables -t filter -L --line-numbers -n
   iptables -t mangle -L --line-numbers -n
 }
+
+function yn {
+  local choice=''
+  while true; do
+    read -p "${1?'Continue'} (y/n)?" choice
+    case "$choice" in
+      y|Y|yes|Yes|YES|tak ) return 0;;
+      n|N|No|NO|no|ni ) return 1;;
+      * ) echo "pls answer y|Y|yes|Yes|YES|tak|n|N|No|NO|no|ni";;
+    esac
+  done
+}
+
