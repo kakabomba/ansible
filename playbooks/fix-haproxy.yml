@@ -1,0 +1,18 @@
+---
+
+- hosts: "{{ hosts|default('*') }}"
+  remote_user: root
+  become: no
+  tasks:
+  - copy:
+      src: "{{ playbook_dir }}/../roles/haproxy-for-workers/templates/scripts/usr/local/bin/ntaxa-haproxy-generate-config-from-workers.sh"
+      dest: /usr/local/bin/ntaxa-haproxy-generate-config-from-workers.sh
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: replace
+    replace:
+      path: /usr/local/bin/ntaxa-haproxy-generate-config-from-workers.sh
+      regexp: "ip_net_domain_sets='.*'"
+      replace: "ip_net_domain_sets='{{ ip_net_domain_sets }}'"

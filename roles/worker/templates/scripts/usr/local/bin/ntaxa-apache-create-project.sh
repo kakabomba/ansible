@@ -24,6 +24,7 @@ mkdir "$di/config/"
 mkdir "$di/config/ssl"
 
 confd="$di/config"
+#echo 'auto' > "$confd"/redirect
 
 echo "ServerName $proj" > "$confd/aliases.conf"
 echo "ServerAlias www.$proj" >> "$confd/aliases.conf"

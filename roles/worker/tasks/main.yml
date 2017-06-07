@@ -28,6 +28,7 @@
     - phpmyadmin
     - pure-ftpd-mysql
     - sysv-rc-conf
+    - libapache2-mod-rpaf
 
 - name: Check phpmyadmin file exists
   stat:
@@ -92,6 +93,14 @@
     name: root
     password: "{{ root_password | password_hash('sha512') }}"
     shell: /bin/zsh
+
+- apache2_module:
+    state: present
+    name: rewrite
+
+- apache2_module:
+    state: present
+    name: rpaf
 
 - name: reload apache2
   service:
@@ -194,8 +203,8 @@
     name: pure-ftpd-mysql
     state: restarted
 
-- name: Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-hosts.sh'
+- name: Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-projects.sh'
   authorized_key:
     user: root
     state: present
-    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-hosts.sh\" {{ haproxy_worker_communication_id_rsa_pub }}"
+    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-projects.sh\" {{ haproxy_worker_communication_id_rsa_pub }}"

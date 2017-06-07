@@ -5,7 +5,7 @@ frontend ----external_ip----_http
 
   acl lets_encrypt_request path_beg -i /.well-known/acme-challenge/
 
-  ----to_https_redirections----
+  http-request set-header X-forwarded-protocol http
 
   use_backend letsencrypt  if lets_encrypt_request
 
@@ -15,8 +15,6 @@ frontend ----external_ip----_http
 frontend ----external_ip----_https
   bind 0.0.0.0:----port_https---- ssl crt-list /etc/haproxy/certs/----external_ip----/certs.txt
 
-  ----to_http_redirections----
+  http-request set-header X-forwarded-protocol https
 
   ----use_backends----
-
-

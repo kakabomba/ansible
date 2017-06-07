@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /usr/local/bin/
+
 source /usr/local/bin/o-lib.sh
 
 run_script_only_once
@@ -76,17 +78,18 @@ generate_certificate () {
   if [[ "$ssltype" == 'auto' ]]; then
     ssl_domains=$(if_fqdn_and_our_ip $ifip $domains)
     for d in $ssl_domains; do
+      __deb "Invoking ./cert_for_domains.sh $d"
       chainkey=$(./cert_for_domains.sh $d)
       if [[ "$chainkey" == "" ]]; then
         __deb "No chain. we will try to get by letsencrypt"
-        last_cert_timestamp=$(file_timestamp /usr/local/bin/haproxy_templates/last_cert_timestamp)
+        last_cert_timestamp=$(file_timestamp /usr/local/bin/haproxy_templates/last_cert_timestamp_$d)
         now_timestamp=$(date +"%s")
         from_last_cert_timestamp=$(( $now_timestamp - $last_cert_timestamp ))
-        if [[ $from_last_cert_timestamp < 36000 ]]; then
+        if [[ $from_last_cert_timestamp < 3600 ]]; then
           __deb "Last certificate was retrieved less than hour ($from_last_cert_timestamp). waiting"
         else
           $(./certonly.sh ntaxa@ntaxa.com $d)
-          touch /usr/local/bin/haproxy_templates/last_cert_timestamp
+          touch /usr/local/bin/haproxy_templates/last_cert_timestamp_$d
           chainkey=$(./cert_for_domains.sh $d)
         fi
       fi
@@ -98,7 +101,7 @@ generate_certificate () {
     done
   fi
   if [[ "$ssltype" == 'yes' ]]; then
-    fullchain_privkey="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh $proj_name)"
+    fullchain_privkey="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-projects.sh $proj_name)"
     cat $fullchain_privkey > "$certdir/$project_name.pem"
   fi
   __deb '<-'" generate_certificate"
@@ -106,9 +109,10 @@ generate_certificate () {
 
 generate_redirections () {
   local ssltype=$1
-  local external_ip=$2
-  local p_n=$3
-  local domains="${@:4}"
+  local redirect=$2
+  local external_ip=$3
+  local p_n=$4
+  local domains="${@:5}"
   local d
   local tohttp="$external_ip_dir/$ip/to_http_redirection.cfg"
   local tohttps="$external_ip_dir/$ip/to_https_redirection.cfg"
@@ -128,7 +132,7 @@ generate_redirections () {
       conditions="$conditions or { $aliasconditin }"
   done
   conditionlines=$(strip_new_lines "$conditionlines$newl$conditions")
-  if [[ "$conditionlines" != "" && $conditions != "" ]]; then
+  if [[ "$conditionlines" != "" && $conditions != "" && $redirect == "yes"  ]]; then
     if [[ "$ssltype" == 'auto' || "$ssltype" == 'yes' ]]; then
       echo "
 # project $p_n" >> $tohttps
@@ -207,8 +211,8 @@ newl="
 "   
 rootdir="/usr/local/bin/haproxy"
 rm -r "$rootdir/"*
-ip_net_domain_sets='88.99.238.12:10.10.12.:oleh.ntaxa.com'
-#ip_net_domain_sets='88.99.238.12:10.10.12.:oleh.ntaxa.com'
+ip_net_domain_sets='88.99.238.13:10.10.13.:md5.ntaxa.com'
+#ip_net_domain_sets='88.99.238.13:10.10.13.:md5.ntaxa.com'
 #allcertsdir="$rootdir/certs"
 for ip_net_domain in $ip_net_domain_sets; do
   read external_ip internal_net external_domain < <(echo $ip_net_domain | sed -e 's/:/ /g')
@@ -217,6 +221,7 @@ for ip_net_domain in $ip_net_domain_sets; do
   mkdir -p $external_ip_dir
   for ipnum in {0..99}; do
     ip=$internal_net$ipnum
+    vmid=$(echo $internal_net | sed -e 's/10\.10\.\([[:digit:]]\{2,2\}\)\./\1/g')$(printf "%02d" $ipnum)
     __deb checking ip $ip
     host_is_up $ip
     if [[ $? == '1' ]]; then
@@ -225,16 +230,16 @@ for ip_net_domain in $ip_net_domain_sets; do
       certdir=$external_ip_dir/$ip/certs
       mkdir -p $certdir
       mkdir -p $external_ip_dirweb/$ip
-      projects="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-hosts.sh)"
-      generate_use_backend $ip host "$ip.$external_domain"
+      projects="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-projects.sh)"
+      generate_use_backend $ip "$vmid"."$external_domain" "$vmid"."$external_domain"
       if [[ "$projects" != "" ]]; then
-        echo "$projects" | while read -r delvar1 project_name delvar2 ssltype delvar3 domains; do
+        echo "$projects" | sed -e 's/[[:alpha:]]\+:/ /g' | while read -r project_name ssltype domains; do
           echo "        project: $project_name"
           echo "          domains: $domains"
           echo "          ssltype: $ssltype"
           generate_use_backend $ip $project_name "$domains"
           generate_certificate $ssltype $external_ip_dir/$ip/certs $external_ip $project_name "$domains"
-          generate_redirections $ssltype $external_ip $project_name "$domains"
+#          generate_redirections $ssltype $redirect $external_ip $project_name "$domains"
         done
       else
         __deb there is no ssh connection to host or no projects there
@@ -252,18 +257,18 @@ for ip_net_domain in $ip_net_domain_sets; do
     __deb ip is $ip
     append_from $external_ip_dir $ip backend.cfg
     append_from $external_ip_dir $ip use_backend.cfg
-    append_from $external_ip_dir $ip to_http_redirection.cfg
-    append_from $external_ip_dir $ip to_https_redirection.cfg
+#    append_from $external_ip_dir $ip to_http_redirection.cfg
+#    append_from $external_ip_dir $ip to_https_redirection.cfg
     copy_from $external_ip_dir $ip certs
   done
 cat ./haproxy_templates/haproxy.frontend.cfg.template \
   | replace_by_file '----use_backends----' $external_ip_dir/use_backend.cfg \
-  | replace_by_file '----to_http_redirections----' $external_ip_dir/to_http_redirection.cfg \
-  | replace_by_file '----to_https_redirections----' $external_ip_dir/to_https_redirection.cfg \
-  | replace_by_string '----port_http----' "80"$(echo $external_ip | sed -e 's/^.*\..*\..*\.//g') \
-  | replace_by_string '----port_https----' "443"$(echo $external_ip | sed -e 's/^.*\..*\..*\.//g') \
+  | replace_by_string '----port_http----' "80" \
+  | replace_by_string '----port_https----' "443" \
   | replace_by_string '----external_ip----' "$external_ip" \
   > $external_ip_dir/frontend.cfg
+#  | replace_by_file '----to_http_redirections----' $external_ip_dir/to_http_redirection.cfg \
+#  | replace_by_file '----to_https_redirections----' $external_ip_dir/to_https_redirection.cfg \
 done
 
 for external_ip in $(ls $rootdir/); do

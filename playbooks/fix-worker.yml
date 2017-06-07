@@ -1,0 +1,62 @@
+---
+
+- hosts: "{{ hosts|default('*') }}"
+  remote_user: root
+  become: no
+  tasks:
+
+  - name: Install common packages
+    apt:
+      name: "{{ item }}"
+    with_items:
+      - libapache2-mod-rpaf
+
+  - copy:
+      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/etc/profile.d/ntaxa_hint.sh"
+      dest: /etc/profile.d/ntaxa_hint.sh
+      owner: root
+      group: root
+      mode: 0755
+
+  - copy:
+      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-create-project.sh"
+      dest: /usr/local/bin/ntaxa-apache-create-project.sh
+      owner: root
+      group: root
+      mode: 0755
+
+  - copy:
+      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-list-projects.sh"
+      dest: /usr/local/bin/ntaxa-apache-list-projects.sh
+      owner: root
+      group: root
+      mode: 0755
+
+  - file:
+      path: /usr/local/bin/ntaxa-apache-list-hosts.sh
+      state: absent
+
+  - apache2_module:
+      state: present
+      name: rewrite
+
+  - apache2_module:
+      state: present
+      name: rpaf
+
+  - name: "Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-projects.sh'"
+    authorized_key:
+      user: root
+      state: present
+      key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-projects.sh\" {{ lookup('file', playbook_dir + '/../roles/haproxy-for-workers/templates/scripts/root/.ssh/haproxy_worker_communication_id_rsa.pub') }}"
+
+  - name: set rpaf.conf ips
+    lineinfile:
+      path: /etc/apache2/mods-available/rpaf.conf
+      regexp: '^\s*RPAFproxy_ips\s.*'
+      line: 'RPAFproxy_ips 10.10.'
+
+  - name: reload apache2
+    service:
+      name: apache2
+      state: restarted

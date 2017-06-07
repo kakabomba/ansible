@@ -18,12 +18,12 @@ for dir in $(ls $vw); do
       if [[ -f "$vw/$dir/config/ssl/fullchain_and_privkey.pem" ]]; then
         ssl="$vw/$dir/config/ssl/fullchain_and_privkey.pem" 
       else
-        ssl=auto 
+        ssl=auto
       fi
     else
       ssl=no
     fi
-    project="project: $dir ssl: $ssl domains: "$(cat $cf | grep '^\s*ServerName\s\+' | head -n1 | sed -e 's/^\s*ServerName\s\+\([^#]*\)\(#.*\)\?$/\1/g')
+    project="project:$dir ssl:$ssl domains:"$(cat $cf | grep '^\s*ServerName\s\+' | head -n1 | sed -e 's/^\s*ServerName\s\+\([^#]*\)\(#.*\)\?$/\1/g')
     aliases=$(cat $cf | grep '^\s*ServerAlias\s\+' | sed -e 's/^\s*ServerAlias\s\+\([^#]\+\)\(#.*\)\?$/\1/g')
     for alias in $aliases; do
       project="$project $alias"

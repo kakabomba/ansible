@@ -13,21 +13,6 @@
     regexp: "ip_net_domain_sets='.*'"
     replace: "ip_net_domain_sets='{{ ip_net_domain_sets }}'"
 
-- name: Ensure .ssh directory exists.
-  file:
-    dest: "/root/.ssh"
-    mode: 0700
-    owner: root
-    state: directory
-
-- name: Install ssh key
-  no_log: true
-  copy:
-    content: "{{ haproxy_worker_communication_id_rsa }}"
-    dest: "/root/.ssh/haproxy_worker_communication_id_rsa"
-    mode: 0600
-    owner: root
-
 - name: restart cron
   service:
     name: cron

@@ -7,7 +7,7 @@
     - name: Usage
       debug:
         msg: "ansible-playbook -vvvv -i ./inventories/profi.py -s ./playbooks/authorize_key.yml -loleh  --extra-vars='public_key=/home/oles/.ssh/some_id_rsa.pub'"
-    - name: Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-hosts.sh'
+    - name: Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-projects.sh'
       authorized_key:
         user: root
         state: present

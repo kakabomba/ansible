@@ -199,12 +199,12 @@ def main_list(options, config_path):
         }
     }
 
-    # Create group 'oleh,ntaxa,yurko'
+    # Create group 'oleh,md5,yurko'
     # so you can: --limit 'oleh'
     results['system'] = {'hosts': []}
     results['profi'] = {'hosts': []}
     results['oleh'] = {'hosts': []}
-    results['ntaxa'] = {'hosts': []}
+    results['md5'] = {'hosts': []}
     results['yurko'] = {'hosts': []}
     results['php5'] = {'hosts': []}
     results['php7'] = {'hosts': []}
@@ -239,7 +239,11 @@ def main_list(options, config_path):
 
             import re
 
-            if vmid >= 1100 and vmid < 1199:
+            if vmid >= 1000 and vmid < 1099:
+                results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.10'
+                results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1000)
+                results['profi']['hosts'] += [vm]
+            elif vmid >= 1100 and vmid < 1199:
                 results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.11'
                 results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1100)
                 results['profi']['hosts'] += [vm]
@@ -250,7 +254,7 @@ def main_list(options, config_path):
             elif vmid >= 1300 and vmid < 1399:
                 results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.13'
                 results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1300)
-                results['ntaxa']['hosts'] += [vm]
+                results['md5']['hosts'] += [vm]
             elif vmid >= 1400 and vmid < 1499:
                 results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.14'
                 results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1400)
