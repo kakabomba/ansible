@@ -1,1 +1,1 @@
-/etc/haproxy/certs/.default
+/etc/haproxy/default.pem

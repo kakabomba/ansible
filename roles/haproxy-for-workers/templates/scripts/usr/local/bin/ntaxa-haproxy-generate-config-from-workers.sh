@@ -4,7 +4,7 @@ cd /usr/local/bin/
 
 source /usr/local/bin/o-lib.sh
 
-run_script_only_once
+run_script_only_once 1 30
 
 f=150
 t=200
@@ -19,7 +19,7 @@ __deb ()
 } 
 
 backend_name () {
-  echo $external_domain-$1
+  echo $external_ip-$1
 }
 
 html ()
@@ -157,8 +157,10 @@ generate_use_backend ()
   for alias in $alsa; do
     if [[ "$alias" =~ [*] ]] ; then
       aliasconditin='hdr_reg(host) -i ^'$(echo $alias | sed -e 's/\./\\./gi' -e 's/\*/.*/gi')'$'
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$alias<br/>" >> $usagefile
     else
       aliasconditin="hdr(host) -i $alias"
+      echo "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href='http://$alias'>$alias</a> (<a href='https://www.whois.com/whois/$alias'>whois</a>)<br/>" >> $usagefile
     fi
 	if [[ ${#conditions} -gt 150 ]]; then
       conditionlines="$conditionlines$newl$conditions"
@@ -210,13 +212,20 @@ replace_by_string () {
 newl="
 "   
 rootdir="/usr/local/bin/haproxy"
+usagefile="$rootdir/usage.html"
+declare -A domain_by_ip
+domain_by_ip['12']=oleh.ntaxa.com
+domain_by_ip['13']=md5.ntaxa.com
+domain_by_ip['14']=yurko.ntaxa.com
 rm -r "$rootdir/"*
-ip_net_domain_sets='88.99.238.13:10.10.13.:md5.ntaxa.com'
-#ip_net_domain_sets='88.99.238.13:10.10.13.:md5.ntaxa.com'
+my_ip_is=$(/sbin/ifconfig | grep 'addr:10\.10\.' | sed -e 's/.*addr:10\.10\.[^.]\.\([^ ]*\).*/\1/')
+ip_net_sets='88.99.238.'"$my_ip_is"':10.10.'"$my_ip_is"'.'
 #allcertsdir="$rootdir/certs"
-for ip_net_domain in $ip_net_domain_sets; do
-  read external_ip internal_net external_domain < <(echo $ip_net_domain | sed -e 's/:/ /g')
-  echo "checking $external_ip $internal_net $external_domain"
+echo "" > $usagefile
+for ip_net in $ip_net_sets; do
+  read external_ip internal_net < <(echo $ip_net | sed -e 's/:/ /g')
+  echo "<h1>External ip $external_ip (generated at $(date))</h1>" >> $usagefile
+  echo "checking $external_ip $internal_net"
   external_ip_dir="$rootdir/$external_ip"
   mkdir -p $external_ip_dir
   for ipnum in {0..99}; do
@@ -226,19 +235,22 @@ for ip_net_domain in $ip_net_domain_sets; do
     host_is_up $ip
     if [[ $? == '1' ]]; then
       echo "    host $ip is up"
+      echo "<h2>Internal ip $ip (VM_ID=$vmid)</h2>" >> $usagefile
       mkdir -p $external_ip_dir/$ip
       certdir=$external_ip_dir/$ip/certs
       mkdir -p $certdir
       mkdir -p $external_ip_dirweb/$ip
       projects="$(ssh -i /root/.ssh/haproxy_worker_communication_id_rsa -oBatchMode=yes $ip /usr/local/bin/ntaxa-apache-list-projects.sh)"
-      generate_use_backend $ip "$vmid"."$external_domain" "$vmid"."$external_domain"
+      generate_use_backend $ip $vmid.${domain_by_ip[$my_ip_is]} $vmid.${domain_by_ip[$my_ip_is]}
       if [[ "$projects" != "" ]]; then
         echo "$projects" | sed -e 's/[[:alpha:]]\+:/ /g' | while read -r project_name ssltype domains; do
           echo "        project: $project_name"
           echo "          domains: $domains"
           echo "          ssltype: $ssltype"
-          generate_use_backend $ip $project_name "$domains"
           generate_certificate $ssltype $external_ip_dir/$ip/certs $external_ip $project_name "$domains"
+          echo "<h3>Project: $project_name (ssltype: $ssltype)</h3>" >> $usagefile
+          echo "<h4>Certificates: $(ls $external_ip_dir/$ip/certs/$project_name*)</h4>"
+          generate_use_backend $ip $project_name "$domains"
 #          generate_redirections $ssltype $redirect $external_ip $project_name "$domains"
         done
       else
@@ -246,7 +258,7 @@ for ip_net_domain in $ip_net_domain_sets; do
       fi
       echo "backend $(backend_name $ip)
     http-response set-header X-VM $ip
-    server $external_domain-$ip $ip:80" > $external_ip_dir/$ip/backend.cfg
+    server $external_ip-$ip $ip:80" > $external_ip_dir/$ip/backend.cfg
     else
       __deb host is down
       echo "    host $ip is down"
@@ -304,6 +316,7 @@ if [[ $md5newcerts != $md5oldcerts ]] || [[ $md5newconf != $md5oldconf ]]; then
   rsync -r --force --del $rootdir/certs/ /etc/haproxy/certs/
   cp $rootdir/haproxy.cfg /etc/haproxy/haproxy.cfg
   /usr/sbin/service haproxy restart
+  cp $usagefile /var/www/html/
 else
   echo "certificates nor configs didn't changed" 
 fi

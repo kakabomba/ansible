@@ -1,62 +1,91 @@
 ---
 
 - hosts: "{{ hosts|default('*') }}"
+  gather_facts: False
   remote_user: root
   become: no
+  serial: 4
   tasks:
 
-  - name: Install common packages
-    apt:
-      name: "{{ item }}"
-    with_items:
-      - libapache2-mod-rpaf
 
-  - copy:
-      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/etc/profile.d/ntaxa_hint.sh"
-      dest: /etc/profile.d/ntaxa_hint.sh
+#  - name: Copy haproxy private key
+#    copy:
+#      src: "{{ playbook_dir }}/../roles/haproxy-for-workers/templates/scripts/root/.ssh/haproxy_worker_communication_id_rsa"
+#      dest: /root/.ssh/
+#      owner: root
+#      group: root
+#      mode: 0400
+
+  - name: Copy script
+    copy:
+      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-haproxy-sync.sh"
+      dest: /usr/local/bin/
       owner: root
       group: root
       mode: 0755
 
-  - copy:
-      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-create-project.sh"
-      dest: /usr/local/bin/ntaxa-apache-create-project.sh
-      owner: root
-      group: root
-      mode: 0755
+#  - name: Copy script
+#    copy:
+#      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-create-project.sh"
+#      dest: /usr/local/bin/
+#      owner: root
+#      group: root
+#      mode: 0755
+#
+#  - name: Copy script
+#    copy:
+#      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-remove-project.sh"
+#      dest: /usr/local/bin/
+#      owner: root
+#      group: root
+#      mode: 0755
 
-  - copy:
-      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-list-projects.sh"
-      dest: /usr/local/bin/ntaxa-apache-list-projects.sh
-      owner: root
-      group: root
-      mode: 0755
 
-  - file:
-      path: /usr/local/bin/ntaxa-apache-list-hosts.sh
-      state: absent
+############################################################
+#  - name: set ftp user isolation
+#    copy:
+#      content: "yes\n"
+#      dest: /etc/pure-ftpd/conf/ChrootEveryone
+#      force: yes
+#      group: root
+#      owner: root
+#
+#  - name: reload pureftp
+#    service:
+#      name: pure-ftpd-mysql
+#      state: restarted
 
-  - apache2_module:
-      state: present
-      name: rewrite
 
-  - apache2_module:
-      state: present
-      name: rpaf
+############################################################
+#  - copy:
+#      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/"
+#      dest: /usr/local/bin/
+#      owner: root
+#      group: root
+#      mode: 0755
 
-  - name: "Set haproxy key to run command '/usr/local/bin/ntaxa-apache-list-projects.sh'"
-    authorized_key:
-      user: root
-      state: present
-      key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-projects.sh\" {{ lookup('file', playbook_dir + '/../roles/haproxy-for-workers/templates/scripts/root/.ssh/haproxy_worker_communication_id_rsa.pub') }}"
+#  - name: set minimum user id
+#    copy:
+#      content: "32\n"
+#      dest: /etc/pure-ftpd/conf/MinUID
+#      force: yes
+#      group: root
+#      owner: root
+#
+#  - name: reload pureftp
+#    service:
+#      name: pure-ftpd-mysql
+#      state: restarted
 
-  - name: set rpaf.conf ips
-    lineinfile:
-      path: /etc/apache2/mods-available/rpaf.conf
-      regexp: '^\s*RPAFproxy_ips\s.*'
-      line: 'RPAFproxy_ips 10.10.'
 
-  - name: reload apache2
-    service:
-      name: apache2
-      state: restarted
+############################################################
+#  - file:
+#      path: /etc/cron.daily/mlocate
+#      state: absent
+#
+#  - name: reload cron
+#    service:
+#      name: cron
+#      state: restarted
+
+  - ping:

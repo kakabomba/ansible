@@ -1,2 +1,2 @@
 
-*/5 * * * * root cd /usr/local/bin; ./ntaxa-haproxy-generate-config-from-workers.sh 2>&1 | logger -p user.info > /dev/null 2>&1
+15 3 * * * root cd /usr/local/bin; ./ntaxa-haproxy-generate-config-from-workers.sh 2>&1 | logger -p user.info > /dev/null 2>&1

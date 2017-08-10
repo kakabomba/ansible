@@ -72,8 +72,9 @@ chown www-data:www-data -R $di
 
 service apache2 restart
 
-echo "Please wait a fem minutes untill proxy server sync aliases.
-All aliases (ServerName and ServerAliases) from $di/config/aliases*.config goes to proxy server every few minutes"
+/usr/local/bin/ntaxa-apache-haproxy-sync.sh
+#echo "Please wait a fem minutes untill proxy server sync aliases.
+#All aliases (ServerName and ServerAliases) from $di/config/aliases*.config goes to proxy server every few minutes"
 
 cd $di
 ls

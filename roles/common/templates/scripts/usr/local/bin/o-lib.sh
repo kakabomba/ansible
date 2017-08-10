@@ -118,10 +118,59 @@ function pid_cleanup {
 }
 
 function run_script_only_once {
+
+  function try_again_later {
+
+    local n=${#BASH_ARGV[@]}
+    local b_args=( )
+    if (( $n > 0 ))
+    then
+        # Get the last index of the args in BASH_ARGV.
+        local n_index=$(( $n - 1 ))
+
+        # Loop through the indexes from largest to smallest.
+        for i in $(seq ${n_index} -1 0)
+        do
+          b_args+=('"'"${BASH_ARGV[$i]}"'"')
+        done
+    fi
+    local try_again_run_in_minutes="$1"
+    if [[ "$try_again_run_in_minutes" -gt 0 ]]; then
+      for atno in $(atq | cut -f1); do
+        if [[ $(at -c $atno | grep $2) ]]; then
+          _w "removing at with number $atno"
+          atrm $atno
+        fi
+      done
+      local apwd=$(pwd)
+      _w "starting $apwd/$2 ${b_args[@]} | at now + $try_again_run_in_minutes minute"
+      echo "$apwd/$2 ${b_args[@]}" | at now + "$try_again_run_in_minutes" minute
+    fi
+    }
+
   local basen=$(basename $0)
   local pid_file="/var/run/$basen.pid"
+  local force_stop_in_minutes=$2
   if [ -f $pid_file ]; then
-    _e "$basen currently running under pid $(cat $pid_file). you can try: kill -9 $(cat $pid_file); rm $pid_file"
+    if [[ "$force_stop_in_minutes" -gt 0 ]]; then
+      local time_of_pid_file=$(file_timestamp $pid_file)
+      local time_now=$(date +"%s")
+      local time_to_restart=$(($time_of_pid_file + $force_stop_in_minutes*60 - $time_now ))
+      _w "time to force restart time_to_restart=(time_of_pid_file=$time_of_pid_file + force_stop_in_seconds=$force_stop_in_minutes*60 - time_now=$time_now )=$time_to_restart<0"
+      if [[ "$time_to_restart" -lt "0" ]]; then
+        _w "force restarting $(basename $0)"
+        kill -9 $(cat $pid_file)
+        rm $pid_file
+        echo $$ > $pid_file
+        trap pid_cleanup EXIT
+      else
+        try_again_later "$1" "$basen"
+        _e "$basen currently running under pid $(cat $pid_file). force rerunuing in $time_to_restart seconds"
+      fi
+    else
+      try_again_later "$1" "$basen"
+      _e "$basen currently running under pid $(cat $pid_file). you can try: kill -9 $(cat $pid_file); rm $pid_file"
+    fi
   else
     echo $$ > $pid_file
     trap pid_cleanup EXIT

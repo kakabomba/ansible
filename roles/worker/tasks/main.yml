@@ -102,6 +102,12 @@
     state: present
     name: rpaf
 
+- name: set rpaf.conf ips
+  lineinfile:
+    path: /etc/apache2/mods-available/rpaf.conf
+    regexp: '^\s*RPAFproxy_ips\s.*'
+    line: 'RPAFproxy_ips 10.10.'
+
 - name: reload apache2
   service:
     name: apache2
@@ -192,8 +198,16 @@
 
 - name: set minimum user id
   copy:
-    content: "33"
-    dest: /etc/pure-ftpd/MinUID
+    content: "32\n"
+    dest: /etc/pure-ftpd/conf/MinUID
+    force: yes
+    group: root
+    owner: root
+
+- name: set ftp user isolation
+  copy:
+    content: "yes\n"
+    dest: /etc/pure-ftpd/conf/ChrootEveryone
     force: yes
     group: root
     owner: root
@@ -207,4 +221,14 @@
   authorized_key:
     user: root
     state: present
-    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-projects.sh\" {{ haproxy_worker_communication_id_rsa_pub }}"
+    key: "no-port-forwarding,no-X11-forwarding,no-pty,command=\"/usr/local/bin/ntaxa-apache-list-projects.sh\" {{ lookup('file', playbook_dir + '/../roles/haproxy-for-workers/templates/scripts/root/.ssh/haproxy_worker_communication_id_rsa.pub') }}"
+
+- name: remove updatedb (consume a lot of IO)
+  file:
+    path: /etc/cron.daily/mlocate
+    state: absent
+
+- name: reload cron
+  service:
+    name: cron
+    state: restarted

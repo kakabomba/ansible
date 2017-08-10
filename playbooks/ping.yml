@@ -1,0 +1,10 @@
+---
+
+- hosts: "{{ hosts|default('*') }}"
+  gather_facts: False
+  remote_user: root
+  become: no
+  serial: 4
+  tasks:
+
+  - ping:

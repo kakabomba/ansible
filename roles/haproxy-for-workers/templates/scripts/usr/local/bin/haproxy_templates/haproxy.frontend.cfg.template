@@ -5,9 +5,13 @@ frontend ----external_ip----_http
 
   acl lets_encrypt_request path_beg -i /.well-known/acme-challenge/
 
+  acl usage_request path_beg -i /usage.html
+
   http-request set-header X-forwarded-protocol http
 
   use_backend letsencrypt  if lets_encrypt_request
+
+  use_backend letsencrypt  if usage_request
 
   ----use_backends----
 

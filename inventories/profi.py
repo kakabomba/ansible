@@ -202,6 +202,8 @@ def main_list(options, config_path):
     # Create group 'oleh,md5,yurko'
     # so you can: --limit 'oleh'
     results['system'] = {'hosts': []}
+    results['next'] = {'hosts': []}
+    results['old_system'] = {'hosts': []}
     results['profi'] = {'hosts': []}
     results['oleh'] = {'hosts': []}
     results['md5'] = {'hosts': []}
@@ -239,10 +241,14 @@ def main_list(options, config_path):
 
             import re
 
-            if vmid >= 1000 and vmid < 1099:
+            if vmid >= 900 and vmid < 999:
+                results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.9'
+                results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 900)
+                results['system']['hosts'] += [vm]
+            elif vmid >= 1000 and vmid < 1099:
                 results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.10'
                 results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1000)
-                results['profi']['hosts'] += [vm]
+                results['next']['hosts'] += [vm]
             elif vmid >= 1100 and vmid < 1199:
                 results['_meta']['hostvars'][vm]['ansible_host'] = '88.99.238.11'
                 results['_meta']['hostvars'][vm]['ansible_port'] = '{}'.format(2200 + vmid - 1100)
@@ -263,7 +269,7 @@ def main_list(options, config_path):
                 results['_meta']['hostvars'][vm]['ansible_host'] = re.sub(r'https?://([a-zA-Z.]+)(:[0-9]*)?/?', r'\1',
                                                                           proxmox_api.options.url)
                 results['_meta']['hostvars'][vm]['ansible_port'] = '22{}'.format(vmid)
-                results['system']['hosts'] += [vm]
+                results['old_system']['hosts'] += [vm]
             # results['_meta']['hostvars'][vm]['ansible_user'] = 'root'
 
             if vmid % 100 > 50 and vmid % 100 < 59 and (

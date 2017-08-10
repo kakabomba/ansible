@@ -44,7 +44,7 @@ while [ $# -ge 1 ]; do
                         shift
                         ;;
                 --size)
-                        add_data rootfs $2
+                        add_data rootfs "!!rootfsvol!!,size%3D$2"
                         shift
                         ;;
                 --hostname)
@@ -80,10 +80,12 @@ csrftoken=$(curl --silent --insecure --data "$up" "$url"api2/json/access/ticket 
 # "$url"api2/json/nodes/profireader/lxc/$id/config
 
 for thisid in $id; do
-    curl --insecure --cookie "$cookie" --header "$csrftoken" -X GET "$url"api2/json/nodes/profireader/lxc/$thisid/config
-    echo ""
-    curl --insecure --cookie "$cookie" --header "$csrftoken" -X PUT "${args[@]}" "$url"api2/json/nodes/profireader/lxc/$thisid/config
-    echo ""
+    olddata=$(curl --insecure --cookie "$cookie" --header "$csrftoken" -X GET "$url"api2/json/nodes/profireader/lxc/$thisid/config 2>/dev/null)
+    echo $olddata
+    rootfsvol=$(echo $olddata | jq --raw-output  '.data.rootfs' | sed -e 's/^\([^,]*\),.*/\1/g')
+    args=$(echo "${args[@]}" | sed -e "s/!!rootfsvol!!/$rootfsvol/g")
+    echo "$args"
+    curl --insecure --cookie "$cookie" --header "$csrftoken" -X PUT $args "$url"api2/json/nodes/profireader/lxc/$thisid/config
     curl --insecure --cookie "$cookie" --header "$csrftoken" -X GET "$url"api2/json/nodes/profireader/lxc/$thisid/config
     echo ""
 done

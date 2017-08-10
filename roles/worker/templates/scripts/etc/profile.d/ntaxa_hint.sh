@@ -4,7 +4,7 @@
 #domain=$(cat /etc/resolv.conf | grep 'domain ' | sed -e's/^[[:space:]]*domain[[:space:]]\+//')
 #echo ''
 #echo ''
-read net ip < <(ifconfig | grep 'inet addr:10.10.' | sed "s/.*addr:10.10.\([[:digit:]]\{1,3\}\).\([[:digit:]]\{1,3\}\).*/\1 \2/")
+read net ip < <(/sbin/ifconfig | grep 'inet addr:10.10.' | sed "s/.*addr:10.10.\([[:digit:]]\{1,3\}\).\([[:digit:]]\{1,3\}\).*/\1 \2/")
 
 case $net in
 12)
