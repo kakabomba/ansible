@@ -1,5 +1,7 @@
 #!/bin/bash
 
+. /usr/local/bin/o-lib.sh
+
 if [[ "$1" == "-h" ]]; then
     echo "Usage: "`basename "$0"`"
 Show all hosts and aliases
@@ -12,7 +14,8 @@ vw='/var/www'
 for dir in $(ls $vw); do
   cf="$vw/$dir/config/aliases.conf"
   >&2 echo "checking directory $dir"
-  if [[ -d $vw/$dir && -f $cf && $dir =~ ^(([a-zA-Z](-*[a-zA-Z0-9])*)\.)*[a-zA-Z](-*[a-zA-Z0-9])+\.[a-zA-Z]{2,}$ ]]; then
+  
+  if [[ -d $vw/$dir && -f $cf ]] && is_fqdn $dir; then
     >&2 echo "checking config file $cf"
     if [[ -d "$vw/$dir/config/ssl" ]]; then
       if [[ -f "$vw/$dir/config/ssl/fullchain_and_privkey.pem" ]]; then

@@ -40,6 +40,7 @@ promptinit
 alias ls="ls --color -la1h "
 alias history="fc -f -n -l 1"
 alias diff="diff --side-by-side --suppress-common-lines -W240"
+alias colordiff="colordiff --side-by-side --suppress-common-lines -W240"
 alias pp='python2 -mjson.tool'
 alias s='sudo zsh'
 

@@ -90,7 +90,7 @@ function host_is_up {
 }
 
 function is_fqdn {
-  if [[ ! $1 =~ ^(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}$ ]]; then
+  if [[ ! $1 =~ ^(([a-zA-Z](-*[a-zA-Z0-9]*)*)\.)*[a-zA-Z](-*[a-zA-Z0-9]*)+\.[a-zA-Z](-*[a-zA-Z0-9]*)+$ ]]; then
     return 1
   else
     return 0

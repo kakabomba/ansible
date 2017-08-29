@@ -13,22 +13,22 @@
       group: root
       mode: 0755
 
-  - name: Copy new 'haproxy.frontend.cfg.template'
-    copy:
-      src: "{{ playbook_dir }}/../roles/haproxy-for-workers/templates/scripts/usr/local/bin/haproxy_templates/haproxy.frontend.cfg.template"
-      dest: /usr/local/bin/haproxy_templates/haproxy.frontend.cfg.template
-      owner: root
-      group: root
-      mode: 0755
-
-
-#  - name: Copy new o-lib.sh
+#  - name: Copy new 'haproxy.frontend.cfg.template'
 #    copy:
-#      src: "{{ playbook_dir }}/../roles/common/templates/scripts/usr/local/bin/o-lib.sh"
-#      dest: /usr/local/bin/o-lib.sh
+#      src: "{{ playbook_dir }}/../roles/haproxy-for-workers/templates/scripts/usr/local/bin/haproxy_templates/haproxy.frontend.cfg.template"
+#      dest: /usr/local/bin/haproxy_templates/haproxy.frontend.cfg.template
 #      owner: root
 #      group: root
 #      mode: 0755
+
+
+  - name: Copy new o-lib.sh
+    copy:
+      src: "{{ playbook_dir }}/../roles/common/templates/scripts/usr/local/bin/o-lib.sh"
+      dest: /usr/local/bin/o-lib.sh
+      owner: root
+      group: root
+      mode: 0755
 #
 #  - name: Copy cron
 #    copy:

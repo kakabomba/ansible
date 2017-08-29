@@ -7,6 +7,11 @@
   serial: 4
   tasks:
 
+#  - name: Remove "postfix" package
+#    apt:
+#      name: postfix
+#      state: absent
+
 
 #  - name: Copy haproxy private key
 #    copy:
@@ -18,19 +23,19 @@
 
   - name: Copy script
     copy:
-      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-haproxy-sync.sh"
+      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-list-projects.sh"
       dest: /usr/local/bin/
       owner: root
       group: root
       mode: 0755
 
-#  - name: Copy script
-#    copy:
-#      src: "{{ playbook_dir }}/../roles/worker/templates/scripts/usr/local/bin/ntaxa-apache-create-project.sh"
-#      dest: /usr/local/bin/
-#      owner: root
-#      group: root
-#      mode: 0755
+  - name: Copy script
+    copy:
+      src: "{{ playbook_dir }}/../roles/common/templates/scripts/usr/local/bin/o-lib.sh"
+      dest: /usr/local/bin/
+      owner: root
+      group: root
+      mode: 0755
 #
 #  - name: Copy script
 #    copy:

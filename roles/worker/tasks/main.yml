@@ -232,3 +232,8 @@
   service:
     name: cron
     state: restarted
+
+- name: Remove "postfix" package
+  apt:
+    name: postfix
+    state: absent
