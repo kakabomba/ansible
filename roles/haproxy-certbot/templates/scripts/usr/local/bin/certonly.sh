@@ -10,7 +10,7 @@ shift
 alld=""
 
 for dom in "$@"; do
-  if [[ ! $dom =~ ^(([a-zA-Z](-?[a-zA-Z0-9])*)\.)*[a-zA-Z](-?[a-zA-Z0-9])+\.[a-zA-Z]{2,}$ ]]; then
+  if ! is_fqdn "$dom"; then
     _e "Wrong domain name $dom. $USAGE"
   fi
   alld="$alld -d $dom"

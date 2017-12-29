@@ -207,3 +207,6 @@ function yn {
   done
 }
 
+function date_readable {
+  date +'%Y-%m-%d_%H-%M-%S'
+}
