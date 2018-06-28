@@ -48,7 +48,19 @@
   file:
     dest: /root/.zshrc
     state: absent
-
+    
+- name: remove .zshrc file from root directory
+  file:
+    dest: "/home/{{ sudo_user }}/.zshrc"
+    state: absent
+    
+- name: copy root script to another user (sudo_user)
+  copy:
+    src: "{{role_path}}/templates/scripts/root/"
+    mode: preserve
+    owner: "{{ sudo_user }}"
+    dest: "/home/{{ sudo_user }}/"
+    
 - name: Copy files .oh-my-zhs
   shell: "if [ ! -d /etc/zsh/.oh-my-zsh ]; then mv /root/.oh-my-zsh /etc/zsh/; fi"
 
