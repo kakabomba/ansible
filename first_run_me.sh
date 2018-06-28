@@ -8,4 +8,4 @@ git config --global user.email "kakabomba@gmail.com"
 git config --global user.name "Oles Zaburannyi"
 git config --global push.default simple
 
-git clone git@github.com:kakabomba/ansible.git
+git clone https://github.com/kakabomba/ansible.git
