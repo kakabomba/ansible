@@ -1,6 +1,6 @@
 #!/bin/bash
 
-apt-get install git ansible
+apt-get install git ansible sudo
 
 usermod -aG sudo $(cat /etc/passwd | tail -n1 | grep 1000 | sed -e 's/:.*//g')
 
