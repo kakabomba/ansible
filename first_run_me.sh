@@ -10,4 +10,4 @@ git config --global push.default simple
 
 git clone https://github.com/kakabomba/ansible.git
 cd ansible
-ansible-playbook -i 'localhost,' ./playbooks/common.yml
+ansible-playbook -i 'localhost,' --connection=local ./playbooks/common.yml
