@@ -9,3 +9,5 @@ git config --global user.name "Oles Zaburannyi"
 git config --global push.default simple
 
 git clone https://github.com/kakabomba/ansible.git
+cd ansible
+ansible-playbook -i 'localhost,' ./playbooks/common.yml
