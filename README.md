@@ -4,4 +4,4 @@ git clone https://github.com/kakabomba/ansible.git
 
 cd ansible
 
-./first_run_me.sh
+bash ./first_run_me.sh
