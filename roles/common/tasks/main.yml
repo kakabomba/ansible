@@ -53,6 +53,7 @@
   file:
     dest: "/home/{{ sudo_user }}/.zshrc"
     state: absent
+  when: sudo_user is defined
     
 - name: copy root script to another user (sudo_user)
   copy:
@@ -60,6 +61,13 @@
     mode: preserve
     owner: "{{ sudo_user }}"
     dest: "/home/{{ sudo_user }}/"
+  when: sudo_user is defined
+    
+- name: change shell for user oles
+  user:
+    name: "{{ sudo_user }}"
+    shell: /usr/bin/zsh
+  when: sudo_user is defined
     
 - name: Copy files .oh-my-zhs
   shell: "if [ ! -d /etc/zsh/.oh-my-zsh ]; then mv /root/.oh-my-zsh /etc/zsh/; fi"
