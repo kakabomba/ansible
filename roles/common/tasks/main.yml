@@ -60,6 +60,7 @@
     src: "{{role_path}}/templates/scripts/root/"
     mode: preserve
     owner: "{{ sudo_user }}"
+    group: "{{ sudo_user_group }}"
     dest: "/home/{{ sudo_user }}/"
   when: sudo_user is defined
     
