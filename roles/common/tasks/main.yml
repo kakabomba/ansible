@@ -31,6 +31,8 @@
     - imagemagick
     - zip
     - kpartx
+    - docker
+    - docker-compose
 
 - name: Generate locales
   shell: locale-gen "en_US" && locale-gen "en_US.UTF-8" && locale-gen "uk_UA.UTF-8"
