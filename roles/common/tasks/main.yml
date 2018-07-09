@@ -8,6 +8,7 @@
     name: "{{ item }}"
   with_items:
     - vim
+    - vim-python-jedi
     - zsh
     - mc
     - ssh
