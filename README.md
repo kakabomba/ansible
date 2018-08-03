@@ -1,4 +1,6 @@
+#run as root
 
+su root
 
 git clone https://github.com/kakabomba/ansible.git
 
